@@ -9,5 +9,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/insurance
     username: user
     password: pass
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
   main:
     allow-bean-definition-overriding: true

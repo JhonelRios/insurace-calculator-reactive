@@ -26,7 +26,7 @@ public class QuoteService {
         System.out.printf("total: %f%n", total);
 
         Quote quote = new Quote(
-                UUID.randomUUID(), data.getBrand(), data.getModel(), data.getYear(), data.getUsageType(),
+                null, data.getBrand(), data.getModel(), data.getYear(), data.getUsageType(),
                 data.getDriverAge(), base, adjustment, total, LocalDateTime.now()
         );
 
