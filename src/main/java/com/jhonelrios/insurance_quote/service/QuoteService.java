@@ -6,6 +6,7 @@ import com.jhonelrios.insurance_quote.model.Quote;
 import com.jhonelrios.insurance_quote.model.VehicleData;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -13,8 +14,8 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuoteService {
@@ -24,13 +25,20 @@ public class QuoteService {
 
     public Mono<Quote> calculateQuote(VehicleData data) {
         String key = generateKey(data);
+        log.info("Calculating quote for: {}", data);
+        log.debug("Generated cache key: {}", key);
 
         return redisTemplate.opsForValue().get(key)
+                .doOnNext(value -> log.info("Cache found for key: {}", key))
                 .flatMap(this::deserializeQuote)
                 .switchIfEmpty(Mono.defer(() -> {
+                    log.info("No cached quote found. Calculating new quote.");
+
                     BigDecimal base = new BigDecimal("500.00");
                     BigDecimal adjustment = calculateAdjustment(data, base);
                     BigDecimal total = base.add(adjustment);
+
+                    log.debug("Base: {} | Adjustment: {} | Total: {}", base, adjustment, total);
 
                     Quote quote = new Quote(
                             null, data.getBrand(), data.getModel(), data.getYear(), data.getUsageType(),
@@ -38,8 +46,11 @@ public class QuoteService {
                     );
 
                     return quoteRepository.save(quote)
+                            .doOnSuccess(saved -> log.info("Quote saved with ID: {}", saved.getId()))
+                            .doOnError(e -> log.error("Error saving quote in database", e))
                             .flatMap(saved -> serializeQuote(saved)
-                                    .flatMap(json -> redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(5)))
+                                    .flatMap(json -> redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(5))
+                                            .doOnSuccess(set -> log.info("Quote cached for 5 min with key: {}", key)))
                                     .thenReturn(saved));
                 }));
     }
