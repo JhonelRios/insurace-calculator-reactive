@@ -3,6 +3,7 @@ package com.jhonelrios.insurance_quote.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jhonelrios.insurance_quote.model.Quote;
+import com.jhonelrios.insurance_quote.model.UsageType;
 import com.jhonelrios.insurance_quote.model.VehicleData;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class QuoteService {
         BigDecimal adjustment = BigDecimal.ZERO;
 
         if (data.getYear() > 2015) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.15)));
-        if ("carga".equalsIgnoreCase(data.getUsageType())) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
+        if (data.getUsageType() == UsageType.CARGA) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
         if (data.getDriverAge() > 50) adjustment = adjustment.subtract(base.multiply(BigDecimal.valueOf(0.05)));
         if ("bmw".equalsIgnoreCase(data.getBrand())) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.2)));
         if ("audi".equalsIgnoreCase(data.getBrand())) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));

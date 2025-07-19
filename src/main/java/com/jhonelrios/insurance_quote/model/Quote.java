@@ -20,7 +20,7 @@ public class Quote {
     private String brand;
     private String model;
     private int year;
-    private String usageType;
+    private UsageType usageType;
     private int driverAge;
     private BigDecimal basePremium;
     private BigDecimal adjustmentAmount;
