@@ -30,3 +30,4 @@ docker compose up --build
     - **Contraseña:** `1234`
 
   Puedes usar estas credenciales en el endpoint `/auth/login` para obtener un token JWT y probar los endpoints protegidos desde Swagger.
+- El reporte de cobertura de test es: `coverage-report.pdf`
