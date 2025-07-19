@@ -62,8 +62,11 @@ public class QuoteService {
         if (data.getYear() > 2015) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.15)));
         if (data.getUsageType() == UsageType.CARGA) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
         if (data.getDriverAge() > 50) adjustment = adjustment.subtract(base.multiply(BigDecimal.valueOf(0.05)));
-        if ("bmw".equalsIgnoreCase(data.getBrand())) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.2)));
-        if ("audi".equalsIgnoreCase(data.getBrand())) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
+
+        switch (data.getBrand().toLowerCase()) {
+            case "bmw" -> adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.2)));
+            case "audi" -> adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
+        }
 
         return adjustment;
     }
