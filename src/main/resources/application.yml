@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: "insurance-quote"
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/insurance
+    username: user
+    password: pass
+  datasource:
+    url: jdbc:postgresql://localhost:5432/insurance
+    username: user
+    password: pass
+  main:
+    allow-bean-definition-overriding: true
