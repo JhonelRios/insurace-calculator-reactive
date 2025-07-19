@@ -14,7 +14,7 @@ public class VehicleData {
     @NotBlank
     private String model;
     @NotNull
-    private int year;
+    private Integer year;
     @NotNull
     private UsageType usageType;
     @Min(18)
