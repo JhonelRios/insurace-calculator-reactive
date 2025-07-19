@@ -1,5 +1,26 @@
 version: '3.8'
 services:
+  app:
+    container_name: insurance_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/insurance
+      SPRING_R2DBC_USERNAME: user
+      SPRING_R2DBC_PASSWORD: pass
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: Fj29kdP0sL9cmN7QwT8zxv1AyLq6Rb3K
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - insurance-net
+
   postgres:
     image: postgres
     container_name: insurance_db
@@ -11,12 +32,19 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - insurance-net
 
   redis:
     image: redis:alpine
     container_name: insurance_redis
     ports:
       - "6379:6379"
+    networks:
+      - insurance-net
 
 volumes:
   pgdata:
+
+networks:
+  insurance-net:
