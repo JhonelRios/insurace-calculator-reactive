@@ -19,3 +19,6 @@ spring:
       port: 6379
   main:
     allow-bean-definition-overriding: true
+
+jwt:
+  secret: "Fj29kdP0sL9cmN7QwT8zxv1AyLq6Rb3K"
