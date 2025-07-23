@@ -1,7 +1,7 @@
 package com.jhonelrios.insurance_quote;
 
-import com.jhonelrios.insurance_quote.model.UsageType;
-import com.jhonelrios.insurance_quote.model.VehicleData;
+import com.jhonelrios.insurance_quote.dto.UsageType;
+import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class IntegrationTest {
     void happyPathShouldWork() {
         String token = jwtUtil.generateToken("test-user");
 
-        VehicleData data = new VehicleData("Toyota", "Yaris", 2020, UsageType.PERSONAL, 40);
+        VehicleDTO data = new VehicleDTO("Toyota", "Yaris", 2020, UsageType.PERSONAL, 40);
 
         webClient.post()
                 .uri("/api/quotes")

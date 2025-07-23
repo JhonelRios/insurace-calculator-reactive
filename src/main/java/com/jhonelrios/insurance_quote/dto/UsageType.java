@@ -1,4 +1,4 @@
-package com.jhonelrios.insurance_quote.model;
+package com.jhonelrios.insurance_quote.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

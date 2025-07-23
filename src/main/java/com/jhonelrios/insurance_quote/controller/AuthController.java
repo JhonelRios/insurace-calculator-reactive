@@ -1,6 +1,6 @@
 package com.jhonelrios.insurance_quote.controller;
 
-import com.jhonelrios.insurance_quote.dto.AuthRequest;
+import com.jhonelrios.insurance_quote.dto.AuthDTO;
 import com.jhonelrios.insurance_quote.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public Mono<Map<String, String>> login(@RequestBody AuthRequest request) {
+    public Mono<Map<String, String>> login(@RequestBody AuthDTO request) {
         String username = request.getUsername();
         String password = request.getPassword();
 

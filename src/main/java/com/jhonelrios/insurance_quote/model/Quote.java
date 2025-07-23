@@ -1,5 +1,6 @@
 package com.jhonelrios.insurance_quote.model;
 
+import com.jhonelrios.insurance_quote.dto.UsageType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

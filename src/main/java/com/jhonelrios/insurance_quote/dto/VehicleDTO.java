@@ -1,4 +1,4 @@
-package com.jhonelrios.insurance_quote.model;
+package com.jhonelrios.insurance_quote.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class VehicleData {
+public class VehicleDTO {
     @NotBlank
     private String brand;
     @NotBlank

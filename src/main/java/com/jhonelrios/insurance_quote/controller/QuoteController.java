@@ -1,7 +1,7 @@
 package com.jhonelrios.insurance_quote.controller;
 
 import com.jhonelrios.insurance_quote.model.Quote;
-import com.jhonelrios.insurance_quote.model.VehicleData;
+import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.service.QuoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class QuoteController {
     private final QuoteService quoteService;
 
     @PostMapping
-    public Mono<Quote> calculate(@RequestBody @Valid VehicleData data) {
+    public Mono<Quote> calculate(@RequestBody @Valid VehicleDTO data) {
         return quoteService.calculateQuote(data)
                 .doOnSuccess(quote -> log.info("Quote calculated: {}", quote));
     }

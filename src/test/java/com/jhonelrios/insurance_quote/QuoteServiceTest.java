@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jhonelrios.insurance_quote.model.Quote;
-import com.jhonelrios.insurance_quote.model.UsageType;
-import com.jhonelrios.insurance_quote.model.VehicleData;
+import com.jhonelrios.insurance_quote.dto.UsageType;
+import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
 import com.jhonelrios.insurance_quote.service.QuoteService;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ public class QuoteServiceTest {
 
     @Test
     void shouldCalculateQuoteWhenCacheIsEmpty() throws JsonProcessingException {
-        VehicleData data = new VehicleData("BMW", "X5", 2018, UsageType.CARGA, 55);
+        VehicleDTO data = new VehicleDTO("BMW", "X5", 2018, UsageType.CARGA, 55);
 
         when(valueOps.get(anyString())).thenReturn(Mono.empty());
 
@@ -86,7 +86,7 @@ public class QuoteServiceTest {
 
     @Test
     void shouldReturnQuoteFromCache() throws JsonProcessingException {
-        VehicleData data = new VehicleData("Audi", "A4", 2020, UsageType.PERSONAL, 40);
+        VehicleDTO data = new VehicleDTO("Audi", "A4", 2020, UsageType.PERSONAL, 40);
         Quote cachedQuote = new Quote(
                 UUID.randomUUID(),
                 data.getBrand(),

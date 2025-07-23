@@ -3,9 +3,10 @@ package com.jhonelrios.insurance_quote.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jhonelrios.insurance_quote.model.Quote;
-import com.jhonelrios.insurance_quote.model.UsageType;
-import com.jhonelrios.insurance_quote.model.VehicleData;
+import com.jhonelrios.insurance_quote.dto.UsageType;
+import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
+import com.jhonelrios.insurance_quote.util.QuoteConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -16,6 +17,9 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import static com.jhonelrios.insurance_quote.util.QuoteConstants.*;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,7 +28,7 @@ public class QuoteService {
     private final ReactiveStringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public Mono<Quote> calculateQuote(VehicleData data) {
+    public Mono<Quote> calculateQuote(VehicleDTO data) {
         String key = generateKey(data);
         log.info("Calculating quote for: {}", data);
         log.debug("Generated cache key: {}", key);
@@ -35,7 +39,7 @@ public class QuoteService {
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("No cached quote found. Calculating new quote.");
 
-                    BigDecimal base = new BigDecimal("500.00");
+                    BigDecimal base = BASE_PREMIUM;
                     BigDecimal adjustment = calculateAdjustment(data, base);
                     BigDecimal total = base.add(adjustment);
 
@@ -50,28 +54,28 @@ public class QuoteService {
                             .doOnSuccess(saved -> log.info("Quote saved with ID: {}", saved.getId()))
                             .doOnError(e -> log.error("Error saving quote in database", e))
                             .flatMap(saved -> serializeQuote(saved)
-                                    .flatMap(json -> redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(5))
-                                            .doOnSuccess(set -> log.info("Quote cached for 5 min with key: {}", key)))
+                                    .flatMap(json -> redisTemplate.opsForValue().set(key, json, CACHE_DURATION)
+                                            .doOnSuccess(set -> log.info("Quote cached with key: {}", key)))
                                     .thenReturn(saved));
                 }));
     }
 
-    private BigDecimal calculateAdjustment(VehicleData data, BigDecimal base) {
+    private BigDecimal calculateAdjustment(VehicleDTO data, BigDecimal base) {
         BigDecimal adjustment = BigDecimal.ZERO;
 
-        if (data.getYear() > 2015) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.15)));
-        if (data.getUsageType() == UsageType.CARGA) adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
-        if (data.getDriverAge() > 50) adjustment = adjustment.subtract(base.multiply(BigDecimal.valueOf(0.05)));
+        if (data.getYear() > YEAR_THRESHOLD) adjustment = adjustment.add(base.multiply(YEAR_ADJUSTMENT_FACTOR));
+        if (data.getUsageType() == UsageType.CARGA) adjustment = adjustment.add(base.multiply(CARGA_USAGE_ADJUSTMENT_FACTOR));
+        if (data.getDriverAge() > DRIVER_AGE_THRESHOLD) adjustment = adjustment.subtract(base.multiply(DRIVER_AGE_ADJUSTMENT_FACTOR));
 
         switch (data.getBrand().toLowerCase()) {
-            case "bmw" -> adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.2)));
-            case "audi" -> adjustment = adjustment.add(base.multiply(BigDecimal.valueOf(0.1)));
+            case BRAND_BMW -> adjustment = adjustment.add(base.multiply(BMW_ADJUSTMENT_FACTOR));
+            case BRAND_AUDI -> adjustment = adjustment.add(base.multiply(AUDI_ADJUSTMENT_FACTOR));
         }
 
         return adjustment;
     }
 
-    private String generateKey(VehicleData data) {
+    private String generateKey(VehicleDTO data) {
         return "quote:" + data.getBrand() + ":" + data.getModel() + ":" + data.getYear() + ":" + data.getUsageType() + ":" + data.getDriverAge();
     }
 
