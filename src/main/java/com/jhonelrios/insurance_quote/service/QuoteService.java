@@ -1,12 +1,10 @@
 package com.jhonelrios.insurance_quote.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jhonelrios.insurance_quote.model.Quote;
 import com.jhonelrios.insurance_quote.dto.UsageType;
 import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
-import com.jhonelrios.insurance_quote.util.QuoteConstants;
+import com.jhonelrios.insurance_quote.util.RedisSerializationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -14,11 +12,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static com.jhonelrios.insurance_quote.util.QuoteConstants.*;
-
 
 @Slf4j
 @Service
@@ -26,7 +22,7 @@ import static com.jhonelrios.insurance_quote.util.QuoteConstants.*;
 public class QuoteService {
     private final QuoteRepository quoteRepository;
     private final ReactiveStringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final RedisSerializationUtil serializationUtil;
 
     public Mono<Quote> calculateQuote(VehicleDTO data) {
         String key = generateKey(data);
@@ -35,7 +31,7 @@ public class QuoteService {
 
         return redisTemplate.opsForValue().get(key)
                 .doOnNext(value -> log.info("Cache found for key: {}", key))
-                .flatMap(this::deserializeQuote)
+                .flatMap(serializationUtil::deserializeQuote)
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("No cached quote found. Calculating new quote.");
 
@@ -53,7 +49,7 @@ public class QuoteService {
                     return quoteRepository.save(quote)
                             .doOnSuccess(saved -> log.info("Quote saved with ID: {}", saved.getId()))
                             .doOnError(e -> log.error("Error saving quote in database", e))
-                            .flatMap(saved -> serializeQuote(saved)
+                            .flatMap(saved -> serializationUtil.serializeQuote(saved)
                                     .flatMap(json -> redisTemplate.opsForValue().set(key, json, CACHE_DURATION)
                                             .doOnSuccess(set -> log.info("Quote cached with key: {}", key)))
                                     .thenReturn(saved));
@@ -77,21 +73,5 @@ public class QuoteService {
 
     private String generateKey(VehicleDTO data) {
         return "quote:" + data.getBrand() + ":" + data.getModel() + ":" + data.getYear() + ":" + data.getUsageType() + ":" + data.getDriverAge();
-    }
-
-    private Mono<String> serializeQuote(Quote quote) {
-        try {
-            return Mono.just(objectMapper.writeValueAsString(quote));
-        } catch (JsonProcessingException e) {
-            return Mono.error(e);
-        }
-    }
-
-    private Mono<Quote> deserializeQuote(String json) {
-        try {
-            return Mono.just(objectMapper.readValue(json, Quote.class));
-        } catch (JsonProcessingException e) {
-            return Mono.error(e);
-        }
     }
 }

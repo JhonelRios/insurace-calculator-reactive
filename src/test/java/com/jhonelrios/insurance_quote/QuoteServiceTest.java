@@ -9,6 +9,7 @@ import com.jhonelrios.insurance_quote.dto.UsageType;
 import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
 import com.jhonelrios.insurance_quote.service.QuoteService;
+import com.jhonelrios.insurance_quote.util.RedisSerializationUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -36,6 +37,9 @@ public class QuoteServiceTest {
     @Mock
     private ReactiveValueOperations<String, String> valueOps;
 
+    @Mock
+    private RedisSerializationUtil redisSerializationUtil;
+
     @InjectMocks
     private QuoteService quoteService;
 
@@ -47,7 +51,7 @@ public class QuoteServiceTest {
         objectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        quoteService = new QuoteService(quoteRepository, redisTemplate, objectMapper);
+        quoteService = new QuoteService(quoteRepository, redisTemplate, redisSerializationUtil);
 
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
     }
@@ -70,6 +74,10 @@ public class QuoteServiceTest {
             quote.setId(UUID.randomUUID());
             return Mono.just(quote);
         });
+
+        String serializedQuoteJson = objectMapper.writeValueAsString(expected);
+        when(redisSerializationUtil.serializeQuote(any(Quote.class)))
+                .thenReturn(Mono.just(serializedQuoteJson));
 
         when(valueOps.set(anyString(), anyString(), any())).thenReturn(Mono.just(true));
 
@@ -103,6 +111,9 @@ public class QuoteServiceTest {
         String jsonQuote = objectMapper.writeValueAsString(cachedQuote);
 
         when(valueOps.get(anyString())).thenReturn(Mono.just(jsonQuote));
+
+        when(redisSerializationUtil.deserializeQuote(anyString()))
+                .thenReturn(Mono.just(cachedQuote));
 
         StepVerifier.create(quoteService.calculateQuote(data))
                 .expectNextMatches(quote ->
