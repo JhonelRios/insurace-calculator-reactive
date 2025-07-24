@@ -26,8 +26,8 @@ docker compose up --build
 
 - Existe un usuario preconfigurado para validar la autenticación con JWT:
 
-    - **Usuario:** `admin`
-    - **Contraseña:** `1234`
+    - **Usuario:** `jhonel`
+    - **Contraseña:** `Hola123#`
 
   Puedes usar estas credenciales en el endpoint `/auth/login` para obtener un token JWT y probar los endpoints protegidos desde Swagger.
 - El reporte de cobertura de test es: `coverage-report.pdf`
