@@ -8,7 +8,7 @@ import com.jhonelrios.insurance_quote.model.Quote;
 import com.jhonelrios.insurance_quote.dto.UsageType;
 import com.jhonelrios.insurance_quote.dto.VehicleDTO;
 import com.jhonelrios.insurance_quote.repository.QuoteRepository;
-import com.jhonelrios.insurance_quote.service.QuoteService;
+import com.jhonelrios.insurance_quote.service.QuoteServiceImpl;
 import com.jhonelrios.insurance_quote.util.RedisSerializationUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class QuoteServiceTest {
     private RedisSerializationUtil redisSerializationUtil;
 
     @InjectMocks
-    private QuoteService quoteService;
+    private QuoteServiceImpl quoteService;
 
     private ObjectMapper objectMapper;
 
@@ -51,7 +51,7 @@ public class QuoteServiceTest {
         objectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        quoteService = new QuoteService(quoteRepository, redisTemplate, redisSerializationUtil);
+        quoteService = new QuoteServiceImpl(quoteRepository, redisTemplate, redisSerializationUtil);
 
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
     }
